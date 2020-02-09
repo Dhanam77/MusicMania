@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background"
+    tools:context=".MusicPlayerActivity">
+
+
+    <include
+        android:id="@+id/music_player_bar"
+        layout="@layout/app_bar" />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/image_logo"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_centerInParent="true"
+        android:paddingBottom="30dp"
+        android:src="@drawable/album_art" />
+
+    <TextView
+        android:id="@+id/song_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/image_logo"
+        android:layout_centerHorizontal="true"
+        android:text="Song Name"
+        android:textSize="20dp" />
+
+
+    <SeekBar
+        android:id="@+id/song_seeker"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/image_logo"
+        android:layout_marginTop="30dp"
+        android:outlineAmbientShadowColor="@android:color/white"
+        android:outlineSpotShadowColor="@android:color/white" />
+
+    <Button
+        android:id="@+id/play_button"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="30dp"
+        android:background="@drawable/play" />
+
+    <Button
+        android:id="@+id/pause_button"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginRight="30dp"
+        android:layout_marginBottom="30dp"
+        android:layout_toLeftOf="@id/play_button"
+        android:background="@drawable/pause" />
+
+    <Button
+        android:id="@+id/stop_button"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="30dp"
+        android:layout_marginBottom="30dp"
+        android:layout_toRightOf="@id/play_button"
+        android:background="@drawable/stop" />
+
+
+</RelativeLayout>
