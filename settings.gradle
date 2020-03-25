@@ -1,2 +1,2 @@
-include ':app'
+include ':app', ':MusicMania', ':spotify-auth-release'
 rootProject.name='MusicMania'

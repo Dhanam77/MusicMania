@@ -63,10 +63,10 @@ public class MusicPlayerActivity extends AppCompatActivity {
         });
 
 
+
         songSeeker.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mediaPlayer.seekTo(seekBar.getProgress());
 
             }
 
