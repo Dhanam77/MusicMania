@@ -17,8 +17,10 @@
         <activity android:name=".SpotifyActivity">
 
         </activity>
-        <activity android:name=".MusicPlayerActivity" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".MusicPlayerActivity"
+            android:parentActivityName=".MainActivity"/>
+        <activity android:name=".MainActivity"
+            android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

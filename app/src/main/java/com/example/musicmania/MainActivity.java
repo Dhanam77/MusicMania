@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.content.Intent;
+import android.media.MediaMetadataRetriever;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
@@ -32,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar mToolbar;
     private ListView songsRecyclerView;
     private SearchView searchView;
-
+    private ArrayAdapter<String> arrayAdapter;
     private String[] items;
 
     @Override
@@ -62,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-            //TODO    adapter.getFilter().filter(newText);
+                MainActivity.this.arrayAdapter.getFilter().filter(newText);
 
                 return false;
             }
@@ -100,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
             if (singleFile.isDirectory() && !singleFile.isHidden()) {
                 arrayList.addAll(findSong(singleFile));
             } else {
-                if ((singleFile.getName().endsWith(".mp3"))) {
+                if ((singleFile.getName().endsWith(".mp3") && singleFile.length() > 2000000)) {
                     arrayList.add(singleFile);
                 }
             }
@@ -121,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
             items[i] = mySongs.get(i).getName().replace(".mp3", "");
         }
 
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
+        arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
         songsRecyclerView.setAdapter(arrayAdapter);
 
         songsRecyclerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

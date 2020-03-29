@@ -1,165 +1,191 @@
 package com.example.musicmania;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
+import android.service.quicksettings.Tile;
+
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import org.w3c.dom.Text;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.jar.Manifest;
 
 public class MusicPlayerActivity extends AppCompatActivity {
 
-    private MediaPlayer mediaPlayer;
-    private Button playButton, pauseButton, stopButton;
-    int pausePosition;
-    private TextView songNameText;
-    private SeekBar songSeeker;
-    String songName, sname;
+    static MediaPlayer mp;//assigning memory loc once or else multiple songs will play at once
     int position;
-    private ArrayList<File> songs;
+    SeekBar sb;
+    ArrayList<File> mySongs;
+    Thread updateSeekBar;
     private Toolbar mToolbar;
-    private Thread updateSeekbar;
+    Button pause, next, previous;
+    TextView songNameText;
 
+    String sname;
 
+    @SuppressLint("NewApi")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_player);
 
-        Initialize();
+        songNameText = (TextView) findViewById(R.id.txtSongLabel);
 
-        updateSeekbar = new Thread(new Runnable() {
+        mToolbar = findViewById(R.id.bar);
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setTitle("Now Playing");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        pause = (Button) findViewById(R.id.pause);
+
+        previous = (Button) findViewById(R.id.previous);
+        next = (Button) findViewById(R.id.next);
+
+        sb = (SeekBar) findViewById(R.id.seekBar);
+
+
+        updateSeekBar = new Thread() {
             @Override
             public void run() {
-                int totalDuration = mediaPlayer.getDuration();
+                int totalDuration = mp.getDuration();
                 int currentPosition = 0;
-                songSeeker.setMax(mediaPlayer.getDuration());
-
-
                 while (currentPosition < totalDuration) {
                     try {
+                        sleep(500);
+                        currentPosition = mp.getCurrentPosition();
+                        sb.setProgress(currentPosition);
+                    } catch (InterruptedException e) {
 
-                        Thread.sleep(500);
-                        currentPosition = mediaPlayer.getCurrentPosition();
-                        songSeeker.setProgress(currentPosition);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
+                    catch (IllegalStateException ee)
+                    {
 
-
+                    }
                 }
             }
-        });
+        };
 
 
-
-        songSeeker.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-                mediaPlayer.seekTo(seekBar.getProgress());
-
-            }
-        });
-
-
-        playButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mediaPlayer == null) {
-                    Uri u = Uri.parse(songs.get(position).toString());
-
-                    mediaPlayer = MediaPlayer.create(getApplicationContext(), u);
-                    mediaPlayer.start();
-                } else if (!mediaPlayer.isPlaying()) {
-                    mediaPlayer.seekTo(pausePosition);
-                    mediaPlayer.start();
-                }
-                else if(mediaPlayer.isPlaying())
-                {
-                    mediaPlayer.stop();
-                    Uri u = Uri.parse(songs.get(position).toString());
-
-                    mediaPlayer = MediaPlayer.create(getApplicationContext(), u);
-                    mediaPlayer.start();
-                }
-            }
-        });
-
-        pauseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mediaPlayer != null) {
-                    mediaPlayer.pause();
-                    pausePosition = mediaPlayer.getCurrentPosition();
-                }
-            }
-        });
-
-        stopButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mediaPlayer != null) {
-                    mediaPlayer.stop();
-                }
-            }
-        });
-
-
-    }
-
-    private void Initialize() {
-
-        playButton = (Button) findViewById(R.id.play_button);
-        pauseButton = (Button) findViewById(R.id.pause_button);
-        stopButton = (Button) findViewById(R.id.stop_button);
-
-        songSeeker = (SeekBar) findViewById(R.id.song_seeker);
-        songNameText = (TextView) findViewById(R.id.song_name);
-
+        if (mp != null) {
+            mp.stop();
+            mp.release();
+        }
         Intent i = getIntent();
         Bundle b = i.getExtras();
 
-        songs = (ArrayList) b.getParcelableArrayList("songs");
-        sname = songs.get(position).getName().toString();
 
-        songName = i.getStringExtra("songName");
-        songNameText.setText(songName);
+        mySongs = (ArrayList) b.getParcelableArrayList("songs");
+
+        sname = mySongs.get(position).getName().toString();
+
+        String SongName = i.getStringExtra("songname");
+        songNameText.setText(SongName);
         songNameText.setSelected(true);
 
         position = b.getInt("pos", 0);
+        Uri u = Uri.parse(mySongs.get(position).toString());
 
-        SetupToolbar();
+        mp = MediaPlayer.create(getApplicationContext(), u);
+        mp.start();
+        sb.setMax(mp.getDuration());
+        updateSeekBar.start();
+        sb.getProgressDrawable().setColorFilter(getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.MULTIPLY);
+        sb.getThumb().setColorFilter(getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_IN);
+
+
+        sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i,boolean b) {
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                mp.seekTo(seekBar.getProgress());
+            }
+        });
+        pause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sb.setMax(mp.getDuration());
+                if (mp.isPlaying()) {
+                    pause.setBackgroundResource(R.drawable.play);
+                    mp.pause();
+
+                } else {
+                    pause.setBackgroundResource(R.drawable.pause);
+                    mp.start();
+                }
+            }
+        });
+
+        next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mp.stop();
+                mp.release();
+                position = ((position + 1) % mySongs.size());
+                Uri u = Uri.parse(mySongs.get(position).toString());
+                // songNameText.setText(getSongName);
+                mp = MediaPlayer.create(getApplicationContext(), u);
+
+                sname = mySongs.get(position).getName().toString();
+                songNameText.setText(sname);
+
+                try {
+                    mp.start();
+                } catch (Exception e) {
+                }
+
+            }
+        });
+        previous.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //songNameText.setText(getSongName);
+                mp.stop();
+                mp.release();
+
+                position = ((position - 1) < 0) ? (mySongs.size() - 1) : (position - 1);
+                Uri u = Uri.parse(mySongs.get(position).toString());
+                mp = MediaPlayer.create(getApplicationContext(), u);
+                sname = mySongs.get(position).getName().toString();
+                songNameText.setText(sname);
+                mp.start();
+            }
+        });
 
 
     }
 
-    private void SetupToolbar() {
-        mToolbar = findViewById(R.id.music_player_bar);
-        setSupportActionBar(mToolbar);
-        getSupportActionBar().setTitle(songName);
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+        }
 
-
+        return super.onOptionsItemSelected(item);
     }
 }
